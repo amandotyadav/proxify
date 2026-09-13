@@ -7,7 +7,8 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "backend": "node backends-sample/simple-backend.js",
-    "test": "node --test"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "proxy",
@@ -19,5 +20,8 @@
   ],
   "author": "amandotyadav",
   "license": "MIT",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "vitest": "^5.0.0"
+  }
 }
