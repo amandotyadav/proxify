@@ -12,7 +12,7 @@ function attachTimeouts(
 
   proxyReq.once("socket", (socket) => {
     if (socket.connecting) {
-      socket.once("connected", onConnected);
+      socket.once("connect", onConnected);
     } else {
       onConnected();
     }
