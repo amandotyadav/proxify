@@ -56,6 +56,15 @@ const server = http.createServer((clientReq, clientRes) => {
   clientReq.pipe(proxyReq);
 });
 
+if (process.env.DEBUG_MEMORY === "true") {
+  setInterval(() => {
+    const mem = process.memoryUsage();
+    console.log(
+      `[memory] rss=${(mem.rss / 1024 / 1024).toFixed(1)}MB heapUsed=${(mem.heapUsed / 1024 / 1024).toFixed(1)}MB`,
+    );
+  }, 200);
+}
+
 server.listen(LISTEN_PORT, () => {
   console.log(`Proxify listening on http://localhost:${LISTEN_PORT}`);
   console.log("Routes:");

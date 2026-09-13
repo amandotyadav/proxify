@@ -9,4 +9,9 @@ module.exports = [
     rewrite: "",
     target: { host: "localhost", port: 4002 },
   },
+  {
+    pathPrefix: "/api/upload",
+    rewrite: "",
+    target: { host: "localhost", port: 4003 },
+  },
 ];
