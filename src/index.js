@@ -1,7 +1,11 @@
 const http = require("http");
 const { matchRoute, rewritePath } = require("./router/matcher");
 const { buildForwardedHeaders } = require("./router/forwarded-header");
-const routes = require("./router/routes.config");
+const {
+  reloadRoutes,
+  getRoutes,
+  startWatching,
+} = require("./router/routes-loader");
 const agent = require("./proxy/agent");
 const { attachTimeouts } = require("./proxy/timeout");
 const { setupGracefulShutdown } = require("./core/shutdown");
@@ -60,6 +64,8 @@ function mapErrorToStatus(err) {
   return { status: 502, message: "502 Bad Gateway: upstream request failed\n" };
 }
 
+reloadRoutes();
+
 const server = http.createServer((clientReq, clientRes) => {
   const requestId = Date.now();
 
@@ -68,7 +74,7 @@ const server = http.createServer((clientReq, clientRes) => {
     `http://${clientReq.headers.host}` || "localhost",
   );
 
-  const route = matchRoute(routes, parsedUrl.pathname);
+  const route = matchRoute(getRoutes(), parsedUrl.pathname);
 
   if (!route) {
     console.log(
@@ -129,12 +135,25 @@ if (process.env.DEBUG_MEMORY === "true") {
   }, 200);
 }
 
+startWatching();
+
+process.on("SIGHUP", () => {
+  try {
+    reloadRoutes();
+    console.log("[routes] reloaded via SIGHUP");
+  } catch (err) {
+    console.error(
+      `[routes] SIGHUP reload failed, keeping previous routes: ${err.message}`,
+    );
+  }
+});
+
 setupGracefulShutdown(server, { forceExitMs: 10000 });
 
 server.listen(LISTEN_PORT, () => {
   console.log(`Proxify listening on http://localhost:${LISTEN_PORT}`);
   console.log("Routes:");
-  for (const route of routes) {
+  for (const route of getRoutes()) {
     console.log(
       `  ${route.pathPrefix} -> ${route.target.host}:${route.target.port}`,
     );
